@@ -1,151 +1,351 @@
 import streamlit as st
 import pandas as pd
-import math
-from pathlib import Path
+import datetime
+import time
+from PIL import Image
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+st.write(
+    "# 🤯 1.Titulok, Nadpis (Title)"
+)
+st.title("😎 Moja aplikacia s Widgetmi a komponentami") 
+
+
+st.write(
+    "# 🔠 2. Text (Text)"
+)
+st.write("Toto je klasicky text")
+ 
+
+st.write(
+    "# ▶️ 3. Tlačidlo (Button)"
 )
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+if st.button("Klikni na mňa"):     
+    st.write("Klikol si na tlacidlo")
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+st.write(
+    "# 🛝 4. Posuvník (slider)"
+)
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+cislo = st.slider("Vyber cislo", 0, 100, 50) 
+st.write(f"Vybrali ste cislo {cislo}")
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+st.write(
+    "# ✍ 5. Textový vstup (Text Input)"
+)
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+meno = st.text_input("Zadajte svoje meno: ") 
+st.write(f"Ahoj, {meno} 👍") 
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
+st.write(
+    "# ☑️ 6. Zaškrtávacie políčko. (Checkbox)"
+)
+
+akcia = st.checkbox("Zobrazit text") 
+
+if akcia:     
+    st.write("Text je zobrazeny 😎") 
+
+st.write(
+    "# 🔽 8. Rozbaľovací zoznam s možnosťami. (Selectbox)"
+)
+
+volba = st.selectbox("Vyberte moznost: ", ["Moznost 1", "Moznost 2", "Moznost 3"]) 
+st.write(f"Vybrali ste, {volba} 👍")
+
+st.write(
+    "# 📁 9. Upload súborov. (File uploader)"
+)
+
+subor = st.file_uploader("Nahrajte subor") 
+
+if subor is not None:     
+    st.write("Subor uspesne nahrany")
+
+# st.write(
+#     "# 🔥 10. Upload CSV súborov. (File CSV uploader)"
+# )
+
+# upload_subor = st.file_uploader("Nahrajte CSV subor: ", type="csv")
+
+# if upload_subor is not None:     
+#     df = pd.read_csv(upload_subor)     
+# st.write("Toto su nase data: ")     
+# st.dataframe(df)
+
+# st.write(
+#     "# 🏁 11. Upload obrázkov. (File image uploader)"
+# )
+
+# upload_obrazok = st.file_uploader("Nahrajte obrazok: ", type = ["jpg", "jpeg", "png"]) 
+
+# if upload_obrazok is not None:     
+#     obrazok = Image.open(upload_obrazok)     
+#     st.image(obrazok, caption = "Nahrany obrazok", use_container_width=True)
+
+# st.write(
+#     "# 📥 12. Tlačidlo na stiahnutie. (Download button)"
+# )
+# # Konvertovanie pandas dataframe do CSV 
+# csv = df.to_csv(index=False) 
+# st.download_button(     
+#     label = "Stiahnut CSV",     
+#     data = csv,     
+#     file_name="filmy.csv",     
+#     mime = "text/csv" )
+
+
+st.write(
+    "# 📻 13. Výber jednej možnosti. (Radio)"
+)
+volba = st.radio("Vyberte si oblubeny zaner filmu: ", ("Akcne", "Komedie", "Drama")) 
+
+if volba == "Akcne":     
+    st.write("Vybrali ste si akcne filmy") 
+elif (volba == "Komedie"):     
+    st.write("Vybrali ste si komedie") 
+else:     
+    st.write("Vybrali ste si Drama")
+
+
+vybrane_filmy = st.multiselect(     
+    "Vyberte svoje oblubene filmy",     
+    ["Matrix", "Pan prsten", "Star Wars", "Inception"],     
+    placeholder= "Vyberte film, ktory sa vam paci" 
     )
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+st.write(f"Vybrali ste: {', '.join(vybrane_filmy)}")
 
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
+st.write(
+    "# 📅 14. Výber dátumu. (Date input)"
 )
 
-''
-''
+datum = st.date_input(
+    "Vyberte datum",
+    datetime.date(2014,5,31)
+)
+
+st.write("Vybrali ste datum: ", datum)
+
+st.write(
+    "# 🕔 15. Výber času. (Time input)"
+)
+
+cas = st.time_input(     
+    "Zadajte cas",     
+    datetime.time(15, 30) 
+) 
+st.write("Vybrali ste cas: ", cas)
 
 
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
+st.write(
+    "# 🅰 16. Vstup dlhšieho textu. (Text area)"
+)
 
-st.header(f'GDP in {to_year}', divider='gray')
+text = st.text_area(     
+    "Napiste svoj nazor na film",     
+    "Zadajte text sem"
+) 
+st.write("Vas nazor: ", text)
 
-''
 
-cols = st.columns(4)
+st.write(
+    "# 🔢 17. Vstup číselnej hodnoty. (Number Input)"
+)
 
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
+hodnotenie = st.number_input(     
+    "Zadajte hodnotenie filmu (od 1 do 10)",     
+    min_value=1,     
+    max_value=10,     
+    value=5, 
+    ) 
+st.write(f"Vase hodnotenie {hodnotenie}/10")
 
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
 
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+st.write(
+    "# 🎚️ 18. Posuvník s výberom. (Select Slider)"
+)
 
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+stupnica = st.select_slider(     
+    "Ako velmi sa vam pacil film?",     
+    options=["Hrozne", "Slabe", "Priemerne", "Dobre", "Vyborne"],     
+    value="Dobre" 
+    ) 
+st.write(f"Vase hodnotenie: {stupnica}")
+
+st.write(
+    "# 🔴 19. Výber farby (Color picker)"
+)
+
+farba = st.color_picker(     
+    "Vyberte farbu pozadia",     
+    "#00F900" 
+) 
+st.write(f"Vasa farba: {farba}")
+
+
+st.write(
+    "# ⏳ 20. Indikátor progresu (Progress)"
+)
+
+# progres = st.progress(0) 
+
+# for i in range(100):     
+#     time.sleep(0.05)     
+#     progres.progress(i + 1)
+
+
+
+st.write(
+    "# 📐 21. Zobrazenie LaTeXu (matematické výrazy) (latex)"
+)
+
+st.latex(r'''      
+     a^2 + b^2 = c^2      
+    '''
+)
+
+st.write(
+    "# 🌍 22. Zobrazenie kódu s formátovaním (code)"
+)
+
+st.code(''' 
+    def ahoj():     
+    print("Ahoj, Streamlit!") ''', 
+    language='python')
+
+st.write(
+    "# 🌐 23. Zobrazenie JSON dát (json)"
+)
+
+data = {     
+    'meno': 'Peter',     
+    'vek': 30,     
+    'zamestnanie': 'programátor'
+ } 
+
+st.json(data)
+
+st.write(
+    "# ➡️ 24. Dynamický widget (všestranný) (write)"
+)
+
+st.write("Textový reťazec")
+st.write(123)
+st.write({'kľúč': 'hodnota'})
+
+st.write(
+    "# 📏 25. Zobrazenie kľúčových metrik (metric)"
+)
+
+st.metric(label="Teplota", value="24°C", delta="2°C")
+
+st.write(
+    "# ❌ 26. Zobrazenie chybovej správy (error)"
+)
+
+st.error("Toto je chybové hlásenie!") 
+
+st.write(
+    "# ✅ 27. Zobrazenie úspešnej správy (success)"
+)
+
+st.success("Úloha bola úspešne dokončená!") 
+
+st.write(
+    "# ⚠️ 28. Zobrazenie varovnej správy (warning)"
+)
+st.warning("Toto je varovanie!") 
+
+
+st.write(
+    "# 🆗 29. Zobrazenie informatívnej správy (info)"
+)
+
+st.info("Toto je informatívna správa.")
+
+
+st.write(
+    "# ❗ 30. Zobrazenie výnimky (chyby v kóde) (exception)"
+)
+
+try:
+    1 / 0 
+except ZeroDivisionError as e: 
+    st.exception(e)
+
+st.write(
+    "# 🌀 31. Zobrazenie spinneru počas načítavania (spinner)"
+)
+
+# Spinner počas načítavania 
+with st.spinner('Čakajte prosím...'):     
+    time.sleep(6) 
+
+st.success('Hotovo!') 
+
+st.write(
+    "# 📝 32. Zobrazenie textovej poznámky (caption)"
+)
+
+st.caption('Toto je poznámka alebo vysvetlenie.')
+
+st.write(
+    "# 🖼️ 33. Zobrazenie obrázkov (image)"
+)
+
+st.image("https://eurocc.nscc.sk/wp-content/uploads/2020/12/CC_EURO-_logo_gold-1.png", caption='Logo NSC')
+
+st.write(
+    "# 🎞️ 34. Zobrazenie videa/audio (video/audio)"
+)
+
+st.video("https://www.youtube.com/watch?v=xG5X5n9cmHg")
+
+st.write(
+    "# 🏛️ 35. Rozdelenie obrazovky do stĺpcov (columns)"
+)
+
+# Vytvorenie 3 stĺpcov 
+col1, col2, col3 = st.columns(3)  
+with col1:     
+    st.write("Stĺpec 1")  
+with col2:     
+    st.write("Stĺpec 2")  
+with col3:     
+    st.write("Stĺpec 3")
+
+st.write(
+    "# 📑 36. Vytváranie záložiek/tabov (tabs)"
+)
+
+# Vytvorenie záložiek 
+tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])  
+with tab1:     
+    st.write("Obsah pre záložku 1")
+      
+with tab2:     
+    st.write("Obsah pre záložku 2")  
+    
+with tab3:     
+    st.write("Obsah pre záložku 3")
+
+
+st.write(
+    "# 🚀 37. Rozbalovací blok (expander)"
+)
+with st.expander("Kliknite sem pre viac informácií"):
+    st.write("Toto je rozbalený obsah")
+
+
+st.write(
+    "# 📈 38. Zobrazenie grafov v Matplotlib (pyplot)"
+)
+
+import matplotlib.pyplot as plt 
+#Vytvorenie jednoduchého grafu 
+fig, ax = plt.subplots() 
+ax.plot([1, 2, 3], [1, 4, 9])
+  
+# Zobrazenie grafu 
+st.pyplot(fig)
